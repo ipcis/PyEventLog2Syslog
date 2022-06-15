@@ -114,6 +114,10 @@ SYSMON_DRIVER = "sysM0N"
 SYSMON_ED_CONFIG = SYSMON_BASE_DIR + "ed_sysmon.cfg"
 SYSMON_MALWARE_CONFIG = SYSMON_BASE_DIR + "malware_sysmon.cfg"
 
+#powershell
+POWERSHELL_ENHANCED_AUDIT_REG_FILE = EXTRA_FILES + "powershell\\powershell_audit.reg"
+
+
 def action_sysmon():
     install_sysmon = ask_question("Do you want to install/download pre-configured Sysmon?")
 
