@@ -1,6 +1,15 @@
 # python eventlog forward
 #thanks to https://github.com/yarox24/attack_monitor/blob/master/installer.py
 
+
+# 2do
+# try download if fail use local files - offline setup
+# sysmon xml working?
+# multi eventsource - threading
+# udp usage
+
+
+
 ## Demonstrates how to create a "pull" subscription
 import win32evtlog, win32event, win32con
 import time, json, xmltodict, socket
@@ -14,7 +23,7 @@ import subprocess
 import os
 
 
-#time.sleep(3)
+
 
 
 #infos
@@ -178,23 +187,6 @@ def is_os_64_bit():
     return os.path.exists("C:\\Program Files (x86)")
 
 
-def downloadSysmon():
-    #https://download.sysinternals.com/files/Sysmon.zip
-    #download xml: https://drive.google.com/file/d/1hwH3_lf_IbBBVixuMcOdOZ2RBd5wAmjl/view?usp=sharing
-    #
-    # ...
-    pass
-	
-	
-def installSysmon():
-    # sysmon.exe -accepteula -i sysmonconfig.xml
-    pass
-
-
-def setAuditPolicySettings():
-    #configure audit log
-    pass
-
 
 def initiateSyslogConnection(host, port):
     # Open a TCP socket to the remote syslog host
@@ -240,10 +232,6 @@ def action_run(eventSub, syslog_host, syslog_port):
     #s=win32evtlog.EvtSubscribe(eventSub, win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=None)
 
 
-
-	#syslog_host = '10.10.30.100'
-	#syslog_port = 514
-
 	syslog_socket = initiateSyslogConnection(syslog_host, syslog_port)
 
 	while 1:
@@ -272,13 +260,16 @@ def action_run(eventSub, syslog_host, syslog_port):
 			
 def help():
     print("Security Eventlog to Syslog")
-    print("Usage: python installer.py <action>")
+    print("Usage: python script.py <action>")
     print("")
     print("Possible actions:")
     print("  sysmon - Install (and download) Sysmon with predefined configuration file")
     print("  auditpol - Enable more events of Windows Audit (Evtx) with auditpol.exe")
     print("  psaudit - (Require PowerShell 5) Enhance audit by enabling: ModuleLogging, ScriptBlockLogging and Transcription")
-    print("  run - start sending logs")
+    print("  runagent:<ip>:<port> - start receiving events and sending over syslogs")
+    print("  ")
+    print("  Usage: python <script>.py runagent:192.168.1.28:514")
+    print("  Press strg+c to break")
 
 def main():
     parser = argparse.ArgumentParser(description='Installer')
@@ -297,9 +288,12 @@ def main():
             action_change_audit()
         elif action == "psaudit":
             action_psaudit()
-        elif action == "run":
+        elif "runagent" in action:
+            arguments = action.split(":")
+            syslogIP = arguments[1]
+            syslogPORT = arguments[2]
             #to subscribe more than one eventlog maybe usage of threading
-            action_run('Microsoft-Windows-Sysmon/Operational', '192.168.1.28', 514)
+            action_run('Microsoft-Windows-Sysmon/Operational', str(syslogIP), int(syslogPORT))
         else:
             parser.error("Unknown action: {}".format(action))
 
