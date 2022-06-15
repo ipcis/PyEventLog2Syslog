@@ -6,7 +6,7 @@
 # try download if fail use local files - offline setup
 # sysmon xml working?
 # multi eventsource - threading
-# udp usage
+# udp usage: https://pythontic.com/modules/socket/udp-client-server-example
 
 
 
