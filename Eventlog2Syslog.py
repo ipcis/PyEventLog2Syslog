@@ -2,9 +2,7 @@
 
 ## Demonstrates how to create a "pull" subscription
 import win32evtlog, win32event, win32con
-
 import time, json, xmltodict, socket
-
 import logging, logging.handlers
 
 time.sleep(3)
@@ -12,7 +10,6 @@ time.sleep(3)
 
 #infos
 #https://gist.github.com/gjyoung1974/a68020c7a4e92b5d595ff382e1e19c20
-
 
 
 # RFC syslog facility types:
@@ -53,10 +50,7 @@ def syslog(s, win_evt, level=LEVEL['debug'], facility=FACILITY['syslog']):
 
 
 
-
-
 #query_text='*[System[Provider[@Name="Microsoft-Windows-Winlogon"]]]'
-
 #query_text='*[System[Provider[@Name="*"]]]'
 
 h=win32event.CreateEvent(None, 0, 0, None)
@@ -68,7 +62,6 @@ h=win32event.CreateEvent(None, 0, 0, None)
 
 #SYSMON - need admin rights - reading
 s=win32evtlog.EvtSubscribe('Microsoft-Windows-Sysmon/Operational', win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=None)
-
 
 
 
