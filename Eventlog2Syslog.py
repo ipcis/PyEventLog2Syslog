@@ -97,6 +97,10 @@ def action_psaudit():
     else:
         print("=> Skip")
 
+	
+#pathes etc.
+INSTALLER_DIRECTORY = os.path.dirname(os.path.abspath(__file__)).replace("/", "\\")
+EXTRA_FILES = INSTALLER_DIRECTORY + "\\" + "extra_files" + "\\"
 
 #SYSMON_
 SYSMON_BASE_DIR = EXTRA_FILES + "sysmon" + "\\"
