@@ -97,7 +97,7 @@ def action_psaudit():
         print("=> Skip")
 
 
-#SYSMON
+#SYSMON_
 SYSMON_BASE_DIR = EXTRA_FILES + "sysmon" + "\\"
 SYSMON_ZIP_URL = "https://download.sysinternals.com/files/Sysmon.zip"
 SYSMON_EXTRACTED_DIR = SYSMON_BASE_DIR + "extracted\\"
