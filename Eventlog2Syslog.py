@@ -120,8 +120,7 @@ SYSMON_64 = SYSMON_EXTRACTED_DIR + "Sysmon64.exe"
 SYSMON_32 = SYSMON_EXTRACTED_DIR + "Sysmon.exe"
 SYSMON_FAKE_NAME = SYSMON_EXTRACTED_DIR + "sysM0N.exe"
 SYSMON_DRIVER = "sysM0N"
-SYSMON_ED_CONFIG = SYSMON_BASE_DIR + "ed_sysmon.cfg"
-SYSMON_MALWARE_CONFIG = SYSMON_BASE_DIR + "malware_sysmon.cfg"
+SYSMON_CONFIG = "\\sysmonconfig.xml"
 
 
 #powershell
@@ -173,6 +172,7 @@ def action_sysmon():
 
                 args = [SYSMON_TAKEN, ]
                 args += "-accepteula -n -d {} -i".format(SYSMON_DRIVER).split(" ")
+		args.append(SYSMON_CONFIG)
 
                 print("Installing Sysmon (Service: {} | Driver: {})".format(os.path.basename(SYSMON_64), SYSMON_DRIVER))
                 subprocess.run(args)
