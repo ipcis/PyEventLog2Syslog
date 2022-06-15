@@ -1,4 +1,5 @@
 # python eventlog forward
+#thanks to https://github.com/yarox24/attack_monitor/blob/master/installer.py
 
 ## Demonstrates how to create a "pull" subscription
 import win32evtlog, win32event, win32con
