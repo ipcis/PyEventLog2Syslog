@@ -11,9 +11,10 @@ import zipfile
 import argparse
 import shutil
 import subprocess
+import os
 
 
-time.sleep(3)
+#time.sleep(3)
 
 
 #infos
@@ -97,15 +98,14 @@ def action_psaudit():
     else:
         print("=> Skip")
 
-	
 #pathes etc.
 INSTALLER_DIRECTORY = os.path.dirname(os.path.abspath(__file__)).replace("/", "\\")
-EXTRA_FILES = INSTALLER_DIRECTORY + "\\" + "extra_files" + "\\"
+EXTRA_FILES = INSTALLER_DIRECTORY + "\\"
 
 #SYSMON_
-SYSMON_BASE_DIR = EXTRA_FILES + "sysmon" + "\\"
+SYSMON_BASE_DIR = EXTRA_FILES + "\\"
 SYSMON_ZIP_URL = "https://download.sysinternals.com/files/Sysmon.zip"
-SYSMON_EXTRACTED_DIR = SYSMON_BASE_DIR + "extracted\\"
+SYSMON_EXTRACTED_DIR = SYSMON_BASE_DIR + "\\"
 SYSMON_ZIP_DOWNLOADED = SYSMON_EXTRACTED_DIR + "Sysmon.zip"
 SYSMON_64 = SYSMON_EXTRACTED_DIR + "Sysmon64.exe"
 SYSMON_32 = SYSMON_EXTRACTED_DIR + "Sysmon.exe"
@@ -114,8 +114,9 @@ SYSMON_DRIVER = "sysM0N"
 SYSMON_ED_CONFIG = SYSMON_BASE_DIR + "ed_sysmon.cfg"
 SYSMON_MALWARE_CONFIG = SYSMON_BASE_DIR + "malware_sysmon.cfg"
 
+
 #powershell
-POWERSHELL_ENHANCED_AUDIT_REG_FILE = EXTRA_FILES + "powershell\\powershell_audit.reg"
+POWERSHELL_ENHANCED_AUDIT_REG_FILE = "powershell_audit.reg"
 
 
 def action_sysmon():
@@ -160,17 +161,9 @@ def action_sysmon():
                 # FAKE NAME - DOESN'T WORK
                 #shutil.copy(SYSMON_TAKEN, SYSMON_FAKE_NAME)
 
-                mode = ask_mode()
-                SYSMON_CONFIG = ""
-                if mode == MODE_ED:
-                    SYSMON_CONFIG = SYSMON_ED_CONFIG
-                else:
-                    SYSMON_CONFIG = SYSMON_MALWARE_CONFIG
-                print("Config choosen: {}".format(os.path.basename(SYSMON_CONFIG)))
 
                 args = [SYSMON_TAKEN, ]
                 args += "-accepteula -n -d {} -i".format(SYSMON_DRIVER).split(" ")
-                args.append(SYSMON_CONFIG)
 
                 print("Installing Sysmon (Service: {} | Driver: {})".format(os.path.basename(SYSMON_64), SYSMON_DRIVER))
                 subprocess.run(args)
@@ -190,21 +183,29 @@ def downloadSysmon():
     #download xml: https://drive.google.com/file/d/1hwH3_lf_IbBBVixuMcOdOZ2RBd5wAmjl/view?usp=sharing
     #
     # ...
+    pass
 	
 	
 def installSysmon():
     # sysmon.exe -accepteula -i sysmonconfig.xml
+    pass
 
 
 def setAuditPolicySettings():
     #configure audit log
+    pass
 
 
 def initiateSyslogConnection(host, port):
     # Open a TCP socket to the remote syslog host
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.connect((host, port))
+    
+    try:
+        s.connect((host, port))
+    except:
+        print("[!] Connection failed!")
+        
     return s
     
 	
@@ -221,11 +222,12 @@ def syslog(s, win_evt, level=LEVEL['debug'], facility=FACILITY['syslog']):
 
 
 
-def action_run():
+def action_run(eventSub, syslog_host, syslog_port):
 	#query_text='*[System[Provider[@Name="Microsoft-Windows-Winlogon"]]]'
 	#query_text='*[System[Provider[@Name="*"]]]'
 
 	h=win32event.CreateEvent(None, 0, 0, None)
+	s=win32evtlog.EvtSubscribe(eventSub, win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=None)
 	#s=win32evtlog.EvtSubscribe('System', win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=query_text)
 
 	#Microsoft-Windows-PowerShell/Operational
@@ -233,12 +235,14 @@ def action_run():
 
 
 	#SYSMON - need admin rights - reading
-	s=win32evtlog.EvtSubscribe('Microsoft-Windows-Sysmon/Operational', win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=None)
+    #EventSub = 'Microsoft-Windows-Sysmon/Operational'
+	#s=win32evtlog.EvtSubscribe('Microsoft-Windows-Sysmon/Operational', win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=None)
+    #s=win32evtlog.EvtSubscribe(eventSub, win32evtlog.EvtSubscribeStartAtOldestRecord, SignalEvent=h, Query=None)
 
 
 
-	syslog_host = '10.10.30.100'
-	syslog_port = 514
+	#syslog_host = '10.10.30.100'
+	#syslog_port = 514
 
 	syslog_socket = initiateSyslogConnection(syslog_host, syslog_port)
 
@@ -249,9 +253,14 @@ def action_run():
 				break
 			for event in events:
 				print (win32evtlog.EvtRender(event, win32evtlog.EvtRenderEventXml))
-				syslog(syslog_socket,
-				   json.dumps(xmltodict.parse(win32evtlog.EvtRender(event, win32evtlog.EvtRenderEventXml))),
-				   level=LEVEL['debug'], facility=FACILITY['syslog'])
+				try:
+				    syslog(syslog_socket,
+				       json.dumps(xmltodict.parse(win32evtlog.EvtRender(event, win32evtlog.EvtRenderEventXml))),
+				       level=LEVEL['debug'], facility=FACILITY['syslog'])
+				except:
+				    print("[!] Connection problem! Wait 5 secs and try to reconnect...")
+				    time.sleep(5)
+				    syslog_socket = initiateSyslogConnection(syslog_host, syslog_port)
 			print ('retrieved %s events' %len(events))
 		while 1:
 			print ('waiting...')
@@ -269,6 +278,7 @@ def help():
     print("  sysmon - Install (and download) Sysmon with predefined configuration file")
     print("  auditpol - Enable more events of Windows Audit (Evtx) with auditpol.exe")
     print("  psaudit - (Require PowerShell 5) Enhance audit by enabling: ModuleLogging, ScriptBlockLogging and Transcription")
+    print("  run - start sending logs")
 
 def main():
     parser = argparse.ArgumentParser(description='Installer')
@@ -288,7 +298,8 @@ def main():
         elif action == "psaudit":
             action_psaudit()
         elif action == "run":
-            action_run()
+            #to subscribe more than one eventlog maybe usage of threading
+            action_run('Microsoft-Windows-Sysmon/Operational', '192.168.1.28', 514)
         else:
             parser.error("Unknown action: {}".format(action))
 
